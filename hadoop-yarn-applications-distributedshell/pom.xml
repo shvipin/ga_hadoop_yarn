@@ -23,11 +23,7 @@
   <version>2.7.1</version>
   <name>hadoop-yarn-applications-distributedshell</name>
 
-  <properties>
-    <!-- Needed for generating FindBugs warnings using parent pom -->
-    <yarn.basedir>${project.parent.parent.basedir}</yarn.basedir>
-  </properties>
-
+ 
   <dependencies>
     <!-- 'mvn dependency:analyze' fails to detect use of this dependency -->
     <dependency>
