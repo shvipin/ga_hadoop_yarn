@@ -7,7 +7,31 @@ import com.dic.distributedga.core.Population;
 public class GA {
 
     public static void main(String[] args) {
-
+    	/*TODO:
+    	 * Phase 1
+    	 * Write listener and sender class using sockets.
+    	 * Sender will be master to send some initial data
+    	 * Listeners will wait for command from sender for initial population.
+    	 * Listeners will start there calculation and dump result.
+    	 * 
+    	 * 
+    	 * Phase 2. 
+    	 * Listeners will send back there result to sender.
+    	 * Sender will chose best answer and display.
+    	 * 
+    	 * Phase 3.
+    	 * At periodic interval, sender will send some individuals to listeners.
+    	 * Listeners will add that data in there next round of calculation.
+    	 * 
+    	 * Phase 4.
+    	 * Sender will send initial population.
+    	 * Sender will send list of all listeners.
+    	 * At periodic interval, listeners will send each other some data.
+    	 * Listener receiving data from other listener will use it like in phase 3.
+    	 * In end, all Listeners will send back there best solution to sender
+    	 * Sender will display data.
+    	 */
+    	
         // Set a candidate solution
         String sol = "111110101010100111111111111010";
        // sol = sol.substring(0,100);
