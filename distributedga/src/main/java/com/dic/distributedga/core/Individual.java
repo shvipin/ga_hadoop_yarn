@@ -1,8 +1,18 @@
 package com.dic.distributedga.core;
 
-public class Individual {
+import java.io.Serializable;
+import java.util.Comparator;
 
-    public static int defaultGeneLength = 64;
+public class Individual implements Serializable{
+
+	public static final Comparator<Individual> SORT_DECREASING_ORDER = new Comparator<Individual>() {
+
+		public int compare(Individual o1, Individual o2) {
+			
+			return o2.getFitness() - o1.getFitness();
+		}
+	};
+    public static int defaultGeneLength = 85;
     private byte[] genes = new byte[defaultGeneLength];
     // Cache
     private int fitness = 0;

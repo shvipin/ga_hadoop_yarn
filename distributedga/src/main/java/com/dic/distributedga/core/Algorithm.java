@@ -4,7 +4,7 @@ public class Algorithm {
 
     /* GA parameters */
     private static final double uniformRate = 0.5;
-    private static final double mutationRate = 0.015;
+    private static final double mutationRate = 0.15;
     private static final int tournamentSize = 5;
     private static final boolean elitism = true;
 
@@ -16,7 +16,7 @@ public class Algorithm {
 
         // Keep our best individual
         if (elitism) {
-            newPopulation.saveIndividual(0, pop.getFittest());
+            newPopulation.saveIndividual(pop.getFittest());
         }
 
         // Crossover population
@@ -32,7 +32,7 @@ public class Algorithm {
             Individual indiv1 = tournamentSelection(pop);
             Individual indiv2 = tournamentSelection(pop);
             Individual newIndiv = crossover(indiv1, indiv2);
-            newPopulation.saveIndividual(i, newIndiv);
+            newPopulation.saveIndividual( newIndiv);
         }
 
         // Mutate population
@@ -77,7 +77,7 @@ public class Algorithm {
         // For each place in the tournament get a random individual
         for (int i = 0; i < tournamentSize; i++) {
             int randomId = (int) (Math.random() * pop.size());
-            tournament.saveIndividual(i, pop.getIndividual(randomId));
+            tournament.saveIndividual( pop.getIndividual(randomId));
         }
         // Get the fittest
         Individual fittest = tournament.getFittest();

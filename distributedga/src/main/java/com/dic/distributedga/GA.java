@@ -1,11 +1,15 @@
 package com.dic.distributedga;
+import java.io.IOException;
+
+import com.dic.distributedga.comm.Receiver;
+import com.dic.distributedga.comm.Sender;
 import com.dic.distributedga.core.Algorithm;
 import com.dic.distributedga.core.FitnessCalc;
 import com.dic.distributedga.core.Individual;
 import com.dic.distributedga.core.Population;
 
-public class GA {
-
+public class GA {    
+    
     public static void main(String[] args) {
     	/*TODO:
     	 * Phase 1
@@ -32,29 +36,19 @@ public class GA {
     	 * Sender will display data.
     	 */
     	
-        // Set a candidate solution
-        String sol = "111110101010100111111111111010";
-       // sol = sol.substring(0,100);
-        int len = sol.length();
-        System.out.println(len);
-        
-        Individual.defaultGeneLength = len;
-         FitnessCalc.setSolution(sol);
-
-        // Create an initial population
-        Population myPop = new Population(50, true);
-        
-        // Evolve our population until we reach an optimum solution
-        int generationCount = 0;
-        while (myPop.getFittest().getFitness() < FitnessCalc.getMaxFitness()) {
-            generationCount++;
-            System.out.println("Generation: " + generationCount + " Fittest: " + myPop.getFittest().getFitness());
-            myPop = Algorithm.evolvePopulation(myPop);
+    	    	
+        if("master".equals(args[0])){
+        	//eg: java GA master 2 3233
+        	MasterGA masterGA = new MasterGA(Integer.parseInt(args[1]),Integer.parseInt(args[2]));
+        	masterGA.init();
+        	masterGA.start();
         }
-        System.out.println("Solution found!");
-        System.out.println("Generation: " + generationCount);
-        System.out.println("Genes:");
-        System.out.println(myPop.getFittest());
-
+        else if("slave".equals(args[0])){
+        	//eg: java GA slave 19.2.4.1 3233
+        	SlaveGA slaveGA = new SlaveGA(args[1],Integer.parseInt(args[2]));
+        	slaveGA.init();
+        	slaveGA.start();
+        }
     }
+
 }
