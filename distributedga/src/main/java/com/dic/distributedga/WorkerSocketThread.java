@@ -9,14 +9,17 @@ import com.dic.distributedga.comm.IReceiverListener;
 
 public class WorkerSocketThread extends Thread {
 
-	Socket socket;
-	private boolean terminate = false;
+	private Socket socket;
+	private boolean terminate;
 	private IReceiverListener listener;
+	private String remoteIPAddress;
 	private final Object lock = new Object();
 
 	public WorkerSocketThread(Socket socket, IReceiverListener listener) {
 		this.socket = socket;
 		this.listener = listener;
+		remoteIPAddress = socket.getInetAddress().getHostAddress();
+		
 	}
 
 	public void setTerminate(){
@@ -48,23 +51,23 @@ public class WorkerSocketThread extends Thread {
 				case Utils.MSG_TERMINATE:
 					
 					if(listener != null)
-						listener.terminationReceivedEvent(workContext);
+						listener.terminationReceivedEvent(remoteIPAddress, workContext);
 					break;
 				
 				case Utils.MSG_READY:
 					
 					if(listener != null)
-						listener.readyReceivedEvent(workContext);
+						listener.readyReceivedEvent(remoteIPAddress, workContext);
 					break;
 
 				case Utils.MSG_INIT_POP:
 					if(listener!= null)
-						listener.initialPopReceivedEvent(workContext);
+						listener.initialPopReceivedEvent(remoteIPAddress, workContext);
 					break;
 					
 				case Utils.MSG_MIGRATION_POP:
 					if(listener != null)
-						listener.migrantPopReceivedEvent(workContext);
+						listener.migrantPopReceivedEvent(remoteIPAddress, workContext);
 					break;
 					
 				default:

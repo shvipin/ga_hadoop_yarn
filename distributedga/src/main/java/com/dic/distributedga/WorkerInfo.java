@@ -11,6 +11,7 @@ public class WorkerInfo {
 	private String ipAddress;
 	private int portNo;
 	private Population poplulation;
+	private Population migrantPopulation;
 	private Socket socket;
 	private ObjectOutputStream sendStream;
 	private WorkerSocketThread workerSocketThread;
@@ -91,5 +92,17 @@ public class WorkerInfo {
 	public ObjectOutputStream getSendStream() {
 		return sendStream;
 	}
+	/**
+	 * @return the migrantPopulation
+	 */
+	public Population getMigrantPopulation() {
+		return migrantPopulation;
+	}
 	
+	/**
+	 * @param migrantPopulation the migrantPopulation to set
+	 */
+	public void setMigrantPopulation(Population migrantPopulation) {
+		this.migrantPopulation = migrantPopulation;
+	}
 }

@@ -5,7 +5,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.LinkedList;
 
 import com.dic.distributedga.comm.GAWorkContext;
 import com.dic.distributedga.comm.IReceiverListener;
@@ -20,33 +20,41 @@ public class MasterGA {
 	private int listenPort;
 	private int slavesCount;
 	private int readySlavesCount;
-	private volatile int message = -1;
+	private volatile int message = 0;
 	private final Object waitObject = new Object();
 	private HashMap<String, WorkerInfo> workerTable;
+	private LinkedList<String> receivedMigrantsFrom;
 	private Population optimalResult;
 	private IReceiverListener receiverListener = new IReceiverListener() {
 
-		public void migrantPopReceivedEvent(GAWorkContext gaWorkContext) {
+		public void migrantPopReceivedEvent(String ipAddress, GAWorkContext gaWorkContext) {
 			synchronized (waitObject) {
-				message &= Utils.MSG_MIGRATION_POP;
+				WorkerInfo workerInfo = workerTable.get(ipAddress);
+				workerInfo.setMigrantPopulation(gaWorkContext.getPopulation());
+
+				if (!receivedMigrantsFrom.contains(ipAddress)) {
+					receivedMigrantsFrom.add(ipAddress);
+				}
+
+				message |= Utils.MSG_MIGRATION_POP;
 				waitObject.notify();
 			}
 		}
 
-		public void initialPopReceivedEvent(GAWorkContext gaWorkContext) {
+		public void initialPopReceivedEvent(String ipAddress, GAWorkContext gaWorkContext) {
 
 		}
 
-		public void terminationReceivedEvent(GAWorkContext gaWorkContext) {
+		public void terminationReceivedEvent(String ipAddress, GAWorkContext gaWorkContext) {
 			synchronized (waitObject) {
-				message &= Utils.MSG_TERMINATE;
+				message |= Utils.MSG_TERMINATE;
 				optimalResult = gaWorkContext.getPopulation();
 				waitObject.notify();
 			}
 
 		}
 
-		public void readyReceivedEvent(GAWorkContext gaWorkContext) {
+		public void readyReceivedEvent(String ipAddress, GAWorkContext gaWorkContext) {
 
 			synchronized (waitObject) {
 				readySlavesCount += 1;
@@ -76,6 +84,7 @@ public class MasterGA {
 			workerTable = new HashMap<String, WorkerInfo>();
 			receiver = new Receiver(listenPort, 0);
 			sender = new Sender();
+			receivedMigrantsFrom = new LinkedList<String>();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -122,7 +131,8 @@ public class MasterGA {
 	}
 
 	private void startAndDistributeGA() {
-		String soln = "111000000000000000000000000000011111111111111111111111111111111111111000000000001111";
+		String soln = "111000000000000000000000000000000000000000000000000000000001111";
+
 		Population aPop = new Population(50, true);
 
 		// break pop into 2 parts. send to 2 clients. 6790, 6791 port
@@ -150,6 +160,7 @@ public class MasterGA {
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
+				
 				if ((message & Utils.MSG_TERMINATE) == Utils.MSG_TERMINATE) {
 					// send all clients terminate, we got solution.
 					for (WorkerInfo workerInfo : workerTable.values()) {
@@ -167,15 +178,42 @@ public class MasterGA {
 					message &= ~Utils.MSG_TERMINATE;
 					break;
 				}
-				
-				if ((message & Utils.MSG_MIGRATION_POP) == Utils.MSG_MIGRATION_POP){
+
+				if ((message & Utils.MSG_MIGRATION_POP) == Utils.MSG_MIGRATION_POP) {
 					
+					while(receivedMigrantsFrom.size()>1){
+						
+						String firstNodeIp = receivedMigrantsFrom.removeFirst();
+						String secondNodeIp = receivedMigrantsFrom.removeFirst();
+						
+						WorkerInfo firstWorker = workerTable.get(firstNodeIp);
+						WorkerInfo secondWorker = workerTable.get(secondNodeIp);
+						
+						try {
+							sender.migratePopulation(firstWorker.getMigrantPopulation(), secondWorker.getSendStream());
+							firstWorker.setMigrantPopulation(null);
+						} catch (UnknownHostException e) {
+							e.printStackTrace();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						
+						try {
+							sender.migratePopulation(secondWorker.getMigrantPopulation(), firstWorker.getSendStream());
+							secondWorker.setMigrantPopulation(null);
+						} catch (UnknownHostException e) {
+							e.printStackTrace();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
 					
-					message &= ~Utils.MSG_MIGRATION_POP;
+					if(receivedMigrantsFrom.size() == 0)
+						message &= ~Utils.MSG_MIGRATION_POP;
 				}
 			}
 		}
-		
+
 		System.out.println("Best solution found :");
 		System.out.println(optimalResult.getFittest());
 

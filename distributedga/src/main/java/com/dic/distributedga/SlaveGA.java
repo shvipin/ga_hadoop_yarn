@@ -28,7 +28,7 @@ public class SlaveGA {
 
 	private IReceiverListener wstListener = new IReceiverListener() {
 
-		public void migrantPopReceivedEvent(GAWorkContext gaWorkContext) {
+		public void migrantPopReceivedEvent(String ipAddress, GAWorkContext gaWorkContext) {
 			synchronized (waitObject) {
 				Population newMigrant = gaWorkContext.getPopulation();
 				if (migrantPopulation == null || migrantPopulation.compareTo(newMigrant) < 0) {
@@ -39,7 +39,7 @@ public class SlaveGA {
 			}
 		}
 
-		public void initialPopReceivedEvent(GAWorkContext gaWorkContext) {
+		public void initialPopReceivedEvent(String ipAddress, GAWorkContext gaWorkContext) {
 			population = gaWorkContext.getPopulation();
 			optimalSol = gaWorkContext.getSolution();
 			FitnessCalc.setSolution(optimalSol);
@@ -48,12 +48,12 @@ public class SlaveGA {
 			}
 		}
 
-		public void terminationReceivedEvent(GAWorkContext gaWorkContext) {
+		public void terminationReceivedEvent(String ipAddress, GAWorkContext gaWorkContext) {
 			serverInfo.getWorkerSocketThread().setTerminate();
 			terminate = true;
 		}
 
-		public void readyReceivedEvent(GAWorkContext gaWorkContext) {
+		public void readyReceivedEvent(String ipAddress, GAWorkContext gaWorkContext) {
 			// TODO Auto-generated method stub
 
 		}
@@ -111,17 +111,15 @@ public class SlaveGA {
 
 		while (terminate == false && population.getFittest().getFitness() < FitnessCalc.getMaxFitness()) {
 			generationCount++;
-			/*if (generationCount % Utils.EVOLUTION_BATCH_SIZE == 0) {
+			if (generationCount % Utils.EVOLUTION_BATCH_SIZE == 0) {
 
 				Population migrants = population.getFittestSubset(Utils.MIGRANT_SIZE);
 
 				try {
 					sender.migratePopulation(migrants, serverInfo.getSendStream());
 				} catch (UnknownHostException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 
@@ -139,7 +137,7 @@ public class SlaveGA {
 					}
 
 				}
-			}*/
+			}
 			System.out.println("Generation: " + generationCount + " Fittest: " + population.getFittest().getFitness());
 			population = Algorithm.evolvePopulation(population);
 		}
