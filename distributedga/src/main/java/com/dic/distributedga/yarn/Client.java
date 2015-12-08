@@ -1,7 +1,10 @@
 package com.dic.distributedga.yarn;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
@@ -18,24 +21,40 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.io.DataOutputBuffer;
+import org.apache.hadoop.security.Credentials;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.yarn.api.ApplicationConstants;
+import org.apache.hadoop.yarn.api.ApplicationConstants.Environment;
 import org.apache.hadoop.yarn.api.protocolrecords.GetNewApplicationResponse;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
+import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.ApplicationSubmissionContext;
+import org.apache.hadoop.yarn.api.records.ContainerLaunchContext;
+import org.apache.hadoop.yarn.api.records.FinalApplicationStatus;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.hadoop.yarn.api.records.LocalResourceVisibility;
+import org.apache.hadoop.yarn.api.records.Resource;
+import org.apache.hadoop.yarn.api.records.YarnApplicationState;
 import org.apache.hadoop.yarn.client.api.YarnClient;
 import org.apache.hadoop.yarn.client.api.YarnClientApplication;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.util.ConverterUtils;
 
+import com.dic.distributedga.Utils;
+
 public class Client {
 	private static final Log log = LogFactory.getLog(Client.class);
-	private static final String appMasterJarHDFSPath = "AppMaster.jar";
+	private static final String appMasterJarHDFSDesPath = "AppMaster.jar";
+	private static final String log4jHDFSDesPath = "log4j.properties";
+	private static final String USER_GA_JAR_NAME = "ga.jar";
 
 	private Options opts;
 	private boolean debugFlag;
+	private String log4jPropFile;
 	private String appName;
 	private int amMemory;
 	private int amVCores;
@@ -65,6 +84,12 @@ public class Client {
 			e.getLocalizedMessage();
 			client.printUsage();
 			System.exit(2);
+		} catch (YarnException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 		if (result) {
@@ -82,7 +107,7 @@ public class Client {
 	}
 
 	public Client(Configuration config) {
-		this("com.dic.distributedga.yarn.GAMaster", config);
+		this("com.dic.distributedga.yarn.ApplicationMasterGA", config);
 	}
 
 	public Client(String amMainClass, Configuration config) {
@@ -145,6 +170,7 @@ public class Client {
 					+ containerVirtualCores + ", numContainer=" + numContainers);
 		}
 
+		log4jPropFile = cliParser.getOptionValue("log_porperties", "");
 		return true;
 	}
 
@@ -185,12 +211,128 @@ public class Client {
 
 		Map<String, LocalResource> localResources = new HashMap<String, LocalResource>();
 		FileSystem fs = FileSystem.get(conf);
-		
-		log.info("Copy app master jar from local file system and add to local environment");
-		addToLocalResources(fs, amJarPath, appMasterJarHDFSPath, appId.toString(), localResources, null);
 
-		
-		return true;
+		log.info("Copy app master jar from local file system and add to local environment");
+		addToLocalResources(fs, amJarPath, appMasterJarHDFSDesPath, appId.toString(), localResources, null);
+
+		if (!log4jPropFile.isEmpty()) {
+			addToLocalResources(fs, log4jPropFile, log4jHDFSDesPath, appId.toString(), localResources, null);
+		}
+
+		String hdfsGAJarLocation = "";
+		long hdfsGAJarLen = 0;
+		long hdfsGAJarTimestamp = 0;
+		if (!amJarPath.isEmpty()) {
+			Path userGAJarSrc = new Path(amJarPath);
+			String userGAJarPathSuffix = appName + "/" + appId.toString() + "/" + USER_GA_JAR_NAME;
+			Path userGAJarHDFSDst = new Path(fs.getHomeDirectory(), userGAJarPathSuffix);
+			fs.copyFromLocalFile(false, true, userGAJarSrc, userGAJarHDFSDst);
+			hdfsGAJarLocation = userGAJarHDFSDst.toUri().toString();
+			FileStatus hdfsGAJarFileStatus = fs.getFileStatus(userGAJarHDFSDst);
+			hdfsGAJarLen = hdfsGAJarFileStatus.getLen();
+			hdfsGAJarTimestamp = hdfsGAJarFileStatus.getModificationTime();
+		}
+
+		// Set the env variable where AM will run
+		log.info("Set the environment on node where application master will run");
+		Map<String, String> env = new HashMap<String, String>();
+
+		// put the location of user ga jar which will run on slave nodes.
+		env.put(Utils.USER_GA_JAR_HDFS_LOC, hdfsGAJarLocation);
+		env.put(Utils.USER_GA_JAR_HDFS_TIMESTAMP, Long.toString(hdfsGAJarTimestamp));
+		env.put(Utils.USER_GA_JAR_HDFS_LEN, Long.toString(hdfsGAJarLen));
+
+		// environment.classpath is yarn.application.classpath in
+		// yarn-default.xml
+		// all jar files needed for running an app in yarn.
+		StringBuilder classPathEnv = new StringBuilder(Environment.CLASSPATH.$$())
+				.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("./*");
+
+		for (String c : conf.getStrings(YarnConfiguration.YARN_APPLICATION_CLASSPATH,
+				YarnConfiguration.DEFAULT_YARN_CROSS_PLATFORM_APPLICATION_CLASSPATH)) {
+			classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR);
+			classPathEnv.append(c.trim());
+		}
+
+		classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("./log4j.properties");
+
+		if (conf.getBoolean(YarnConfiguration.IS_MINI_YARN_CLUSTER, false)) {
+			classPathEnv.append(':');
+			classPathEnv.append(System.getProperty("java.class.path"));
+		}
+
+		env.put("CLASSPATH", classPathEnv.toString());
+		log.info("classpath env variable");
+		log.info(classPathEnv.toString());
+
+		ArrayList<CharSequence> vargs = new ArrayList<CharSequence>(30);
+
+		// set java executable command
+		log.info("set up master command");
+		vargs.add(Environment.JAVA_HOME.$$() + "/bin/java");
+		vargs.add("-Xms" + amMemory + "m");
+		vargs.add(amMainClass);
+		vargs.add("--container_memory " + String.valueOf(containerMemory));
+		vargs.add("--container_vcores " + String.valueOf(containerVirtualCores));
+		vargs.add("--num_containers " + String.valueOf(numContainers));
+
+		if (debugFlag) {
+			vargs.add("--debug");
+		}
+
+		vargs.add("1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/AppMaster.stdout");
+		vargs.add("2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/AppMaster.stderr");
+
+		// final command
+		StringBuilder command = new StringBuilder();
+		for (CharSequence str : vargs) {
+			command.append(str).append(" ");
+		}
+
+		log.info("completed app master command ");
+		log.info(command.toString());
+		List<String> commands = new ArrayList<String>();
+		commands.add(command.toString());
+
+		// container launch context for app master
+		ContainerLaunchContext amContainer = ContainerLaunchContext.newInstance(localResources, env, commands, null,
+				null, null);
+
+		Resource capability = Resource.newInstance(amMemory, amVCores);
+		appContext.setResource(capability);
+
+		if (UserGroupInformation.isSecurityEnabled()) {
+			// Note: Credentials class is marked as LimitedPrivate for HDFS and
+			// MapReduce
+			Credentials credentials = new Credentials();
+			String tokenRenewer = conf.get(YarnConfiguration.RM_PRINCIPAL);
+			if (tokenRenewer == null || tokenRenewer.length() == 0) {
+				throw new IOException("Can't get Master Kerberos principal for the RM to use as renewer");
+			}
+
+			// For now, only getting tokens for the default file-system.
+			final Token<?> tokens[] = fs.addDelegationTokens(tokenRenewer, credentials);
+			if (tokens != null) {
+				for (Token<?> token : tokens) {
+					log.info("Got dt for " + fs.getUri() + "; " + token);
+				}
+			}
+			DataOutputBuffer dob = new DataOutputBuffer();
+			credentials.writeTokenStorageToStream(dob);
+			ByteBuffer fsTokens = ByteBuffer.wrap(dob.getData(), 0, dob.getLength());
+			amContainer.setTokens(fsTokens);
+		}
+
+		appContext.setAMContainerSpec(amContainer);
+		// set up process complete at this point now client is ready to submit
+		// application.
+
+		log.info("submitting application to ");
+
+		yarnClient.submitApplication(appContext);
+
+		return monitorApplication(appId);
+
 	}
 
 	public void addToLocalResources(FileSystem fs, String fileSrcPath, String fileDstPath, String appId,
@@ -208,18 +350,64 @@ public class Client {
 				IOUtils.closeQuietly(ostream);
 			}
 
-		}
-		else {
+		} else {
 			fs.copyFromLocalFile(new Path(fileSrcPath), dst);
 		}
-		
+
 		FileStatus scFileStatus = fs.getFileStatus(dst);
-		LocalResource scRsrc = LocalResource.newInstance(
-				ConverterUtils.getYarnUrlFromURI(dst.toUri()),
-				LocalResourceType.FILE,
-				LocalResourceVisibility.APPLICATION,
-				scFileStatus.getLen(),
+		LocalResource scRsrc = LocalResource.newInstance(ConverterUtils.getYarnUrlFromURI(dst.toUri()),
+				LocalResourceType.FILE, LocalResourceVisibility.APPLICATION, scFileStatus.getLen(),
 				scFileStatus.getModificationTime());
 		localResources.put(fileDstPath, scRsrc);
+	}
+
+	public boolean monitorApplication(ApplicationId appId) throws YarnException, IOException {
+		while (true) {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			ApplicationReport report = yarnClient.getApplicationReport(appId);
+			
+		      log.info("Got application report from ASM for"
+		              + ", appId=" + appId.getId()
+		              + ", clientToAMToken=" + report.getClientToAMToken()
+		              + ", appDiagnostics=" + report.getDiagnostics()
+		              + ", appMasterHost=" + report.getHost()
+		              + ", appQueue=" + report.getQueue()
+		              + ", appMasterRpcPort=" + report.getRpcPort()
+		              + ", appStartTime=" + report.getStartTime()
+		              + ", yarnAppState=" + report.getYarnApplicationState().toString()
+		              + ", distributedFinalState=" + report.getFinalApplicationStatus().toString()
+		              + ", appTrackingUrl=" + report.getTrackingUrl()
+		              + ", appUser=" + report.getUser());
+		      
+		      
+		      
+		      YarnApplicationState state = report.getYarnApplicationState();
+		      FinalApplicationStatus dsStatus = report.getFinalApplicationStatus();
+		      if (YarnApplicationState.FINISHED == state) {
+		        if (FinalApplicationStatus.SUCCEEDED == dsStatus) {
+		          log.info("Application has completed successfully. Breaking monitoring loop");
+		          return true;        
+		        }
+		        else {
+		          log.info("Application did finished unsuccessfully."
+		              + " YarnState=" + state.toString() + ", DSFinalStatus=" + dsStatus.toString()
+		              + ". Breaking monitoring loop");
+		          return false;
+		        }			  
+		      }
+		      else if (YarnApplicationState.KILLED == state	
+		          || YarnApplicationState.FAILED == state) {
+		        log.info("Application did not finish."
+		            + " YarnState=" + state.toString() + ", DSFinalStatus=" + dsStatus.toString()
+		            + ". Breaking monitoring loop");
+		        return false;
+		      }			
+		}
 	}
 }

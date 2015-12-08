@@ -14,7 +14,10 @@ public class Utils {
     public static final int EVOLUTION_BATCH_SIZE = 20;
     public static final int MIGRANT_SIZE         = 5;
     
-    
+    public static final String USER_GA_JAR_HDFS_LOC = "USER_GA_JAR_HDFS_LOC";
+    public static final String USER_GA_JAR_HDFS_TIMESTAMP = "USER_GA_JAR_HDFS_TIMESTAMP";
+    public static final String USER_GA_JAR_HDFS_LEN = "USER_GA_JAR_HDFS_LEN";
+
     public static Socket createSocket(String ipAddress,int portNo) throws UnknownHostException, IOException{
     	Socket socket = new Socket(ipAddress, portNo);
     	socket.setTcpNoDelay(true);
