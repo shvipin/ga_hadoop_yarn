@@ -25,6 +25,7 @@ public class Utils {
 	public static final String USER_GA_JAR_HDFS_LOC = "USER_GA_JAR_HDFS_LOC";
 	public static final String USER_GA_JAR_HDFS_TIMESTAMP = "USER_GA_JAR_HDFS_TIMESTAMP";
 	public static final String USER_GA_JAR_HDFS_LEN = "USER_GA_JAR_HDFS_LEN";
+	public static final	String GA_PORT_STRING = "6000";
 
 	public static Socket createSocket(String ipAddress, int portNo) throws UnknownHostException, IOException {
 		Socket socket = new Socket(ipAddress, portNo);

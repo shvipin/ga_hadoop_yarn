@@ -50,7 +50,7 @@ public class Client {
 	private static final Log log = LogFactory.getLog(Client.class);
 	private static final String appMasterJarHDFSDesPath = "AppMaster.jar";
 	private static final String log4jHDFSDesPath = "log4j.properties";
-	private static final String USER_GA_JAR_NAME = "ga.jar";
+	public static final String USER_GA_JAR_NAME = "ga.jar";
 
 	private Options opts;
 	private boolean debugFlag;

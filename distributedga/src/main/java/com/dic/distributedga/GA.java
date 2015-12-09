@@ -36,6 +36,7 @@ public class GA {
     	 * Sender will display data.
     	 */
     	
+    	System.out.println("starting ga class");
     	    	
         if("master".equals(args[0])){
         	//eg: java GA master 2 3233
