@@ -9,6 +9,7 @@ public class GAConfig {
 	public static final int  CONTAINER_V_CORES = 1;
 	public static final int  DEFAULT_PORT = 6000;
 
+	private static GAConfig _instance = new GAConfig();
 	private String appName;
 	private int masterMemory;
 	private int masterVCores;
@@ -17,6 +18,12 @@ public class GAConfig {
 	private int containersVCores;
 	private int containersCount;
 	private int portNo;
+		
+	private GAConfig(){}
+	
+	public static GAConfig getInstance(){
+		return _instance;
+	}
 	
 	/**
 	 * @return the appName
