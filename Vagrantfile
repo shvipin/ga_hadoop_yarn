@@ -18,16 +18,19 @@ Vagrant.configure(2) do |config|
         nodea.vm.hostname = "master-node"
         nodea.vm.network "forwarded_port", guest: 50070, host: 50070
         nodea.vm.network "forwarded_port", guest: 8088, host: 8088
+#        nodea.vm.network "forwarded_port", guest: 8042, host: 8042
         nodea.vm.provision "shell", path: "provision/nodea.sh"
     end
 
     config.vm.define "NodeB" do |nodeb|
         nodeb.vm.network "private_network", ip: "10.10.10.6"
         nodeb.vm.hostname  = "slave-node-1"
+#        nodea.vm.network "forwarded_port", guest: 8042, host: 8142
     end
 
     config.vm.define "NodeC" do |nodec|
         nodec.vm.network "private_network", ip: "10.10.10.7"
         nodec.vm.hostname  = "slave-node-2"
+#        nodea.vm.network "forwarded_port", guest: 8042, host: 8242
     end
 end

@@ -10,6 +10,7 @@ import com.dic.distributedga.comm.IReceiverListener;
 import com.dic.distributedga.comm.Sender;
 import com.dic.distributedga.core.Algorithm;
 import com.dic.distributedga.core.FitnessCalc;
+import com.dic.distributedga.core.Individual;
 import com.dic.distributedga.core.Population;
 
 public class SlaveGA {
@@ -103,6 +104,7 @@ public class SlaveGA {
 			}
 		}
 
+		
 		// we got population to work on
 		processPopulation();
 	}

@@ -1,0 +1,9 @@
+$HADOOP_HOME/bin/hadoop \
+jar /vagrant_host/distributedga/target/distributedga-1.0.jar com.dic.distributedga.yarn.Client \
+--appname genelengthga \
+--jar /vagrant_host/distributedga/target/distributedga-1.0.jar \
+--master_memory 1024 \
+--master_vcores 1 \
+--num_containers 2 \
+--container_memory 1024 \
+--container_vcores 2

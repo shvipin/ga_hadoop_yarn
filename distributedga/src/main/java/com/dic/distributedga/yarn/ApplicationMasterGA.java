@@ -1,10 +1,13 @@
 package com.dic.distributedga.yarn;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -17,7 +20,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -63,6 +66,7 @@ import org.apache.hadoop.yarn.security.AMRMTokenIdentifier;
 import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.log4j.LogManager;
 
+import com.dic.distributedga.MasterGA;
 import com.dic.distributedga.Utils;
 
 public class ApplicationMasterGA {
@@ -266,23 +270,30 @@ public class ApplicationMasterGA {
 			ArrayList<CharSequence> vargs = new ArrayList<CharSequence>();
 			log.info("set up master command");
 			vargs.add(Environment.JAVA_HOME.$$() + "/bin/java");
-			vargs.add("-Xms" + containerMemory + "m");
-			vargs.add("-jar");
+			//vargs.add("-Xms" + containerMemory + "m");
+			vargs.add("-cp");
 			vargs.add(GA_JAR_STRING_PATH);
-			vargs.add("GA");
+			vargs.add("com.dic.distributedga.GA");
 			vargs.add("slave");
-
-			vargs.add(System.getenv().get(Environment.NM_HOST.name()));
+			String ip =System.getenv(Environment.NM_HOST.name());
+			try {
+				InetAddress address = InetAddress.getByName(ip);
+				ip = address.getHostAddress();
+			} catch (UnknownHostException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			vargs.add(ip);
 			vargs.add(Utils.GA_PORT_STRING);
 
-			vargs.add("1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stdout");
-			vargs.add("2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stderr");
+			vargs.add("1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/SlaveGA.stdout");
+			vargs.add("2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/SlaveGA.stderr");
 
 			StringBuilder command = new StringBuilder();
 			for (CharSequence str : vargs) {
 				command.append(str).append(" ");
 			}
-
+			log.info("slave setup command is = "+command.toString());
 			List<String> commands = new ArrayList<String>();
 			commands.add(command.toString());
 
@@ -304,7 +315,6 @@ public class ApplicationMasterGA {
 			if (!doRun) {
 				System.exit(0);
 			}
-
 			appMaster.run();
 			result = appMaster.finish();
 
@@ -352,7 +362,7 @@ public class ApplicationMasterGA {
 	}
 
 	public boolean init(String[] args) throws ParseException {
-		CommandLine cliParser = new DefaultParser().parse(opts, args);
+		CommandLine cliParser = new GnuParser().parse(opts, args);
 
 		if (args.length == 0) {
 			printUsage(opts);
@@ -414,7 +424,7 @@ public class ApplicationMasterGA {
 		userGAJarHDFSLoc = envs.get(Utils.USER_GA_JAR_HDFS_LOC);
 
 		if (envs.containsKey(Utils.USER_GA_JAR_HDFS_LEN)) {
-			userGAJarHDFSLen = Long.parseLong(envs.get(Utils.USER_GA_JAR_HDFS_LOC));
+			userGAJarHDFSLen = Long.parseLong(envs.get(Utils.USER_GA_JAR_HDFS_LEN));
 		}
 
 		if (envs.containsKey(Utils.USER_GA_JAR_HDFS_TIMESTAMP)) {
@@ -436,7 +446,7 @@ public class ApplicationMasterGA {
 	}
 
 	public boolean fileExist(String hdfsPath) {
-		return true;
+		return new File(hdfsPath).exists();
 	}
 
 	private void dumpOutDebugInfo() {
@@ -463,10 +473,20 @@ public class ApplicationMasterGA {
 		}
 
 	}
-
+	MasterGA ga = null;
 	public void run() throws IOException, YarnException {
 		log.info("Starting application master");
-
+		//ga = new MasterGA(numTotalContainers, 6000);
+		new Thread(new Runnable() {
+			
+			public void run() {
+				MasterGA ga = new MasterGA(numTotalContainers, 6000);
+				ga.init();
+				ga.start();
+				
+			}
+		}).start();
+		
 		Credentials credentials = UserGroupInformation.getCurrentUser().getCredentials();
 		DataOutputBuffer dob = new DataOutputBuffer();
 
@@ -484,7 +504,7 @@ public class ApplicationMasterGA {
 
 		allTokens = ByteBuffer.wrap(dob.getData(), 0, dob.getLength());
 
-		String appSubmitterUserName = System.getenv(ApplicationConstants.Environment.USER.$$());
+		String appSubmitterUserName = System.getenv(ApplicationConstants.Environment.USER.name());
 		log.info("app submitter user name = " + appSubmitterUserName);
 		appSubmitterUgi = UserGroupInformation.createRemoteUser(appSubmitterUserName);
 		appSubmitterUgi.addCredentials(credentials);

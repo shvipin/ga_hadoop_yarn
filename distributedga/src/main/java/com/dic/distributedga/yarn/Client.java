@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -115,7 +115,7 @@ public class Client {
 		this.conf = config;
 		this.amMainClass = amMainClass;
 		yarnClient = YarnClient.createYarnClient();
-
+		yarnClient.init(conf);
 		opts = new Options();
 		opts.addOption("appname", true, "Application name. Default value - DistributedGA");
 		opts.addOption("master_memory", true, "Amount of memory in MB to be requested to run the application master");
@@ -130,7 +130,7 @@ public class Client {
 
 	public boolean init(String[] args) throws ParseException {
 		log.info("Initializing client");
-		CommandLine cliParser = new DefaultParser().parse(opts, args);
+		CommandLine cliParser = new GnuParser().parse(opts, args);
 
 		if (args.length == 0) {
 			throw new IllegalArgumentException("No args specified for client to initialize");

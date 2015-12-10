@@ -1,12 +1,5 @@
 package com.dic.distributedga;
-import java.io.IOException;
-
-import com.dic.distributedga.comm.Receiver;
-import com.dic.distributedga.comm.Sender;
-import com.dic.distributedga.core.Algorithm;
-import com.dic.distributedga.core.FitnessCalc;
-import com.dic.distributedga.core.Individual;
-import com.dic.distributedga.core.Population;
+import java.net.InetAddress;
 
 public class GA {    
     
@@ -37,19 +30,31 @@ public class GA {
     	 */
     	
     	System.out.println("starting ga class");
-    	    	
+    	for(int i=0;i<args.length;i++){
+    		System.out.println("argument "+i+" = "+args[i]);
+    	}
+    	try{
+    	InetAddress address = InetAddress.getLocalHost();
+    	System.out.println(address.getHostName()+ " "+address.getHostAddress());
+    	}catch(Exception e){
+    		e.printStackTrace();
+    	}
         if("master".equals(args[0])){
+    	System.out.println("inside master ");
         	//eg: java GA master 2 3233
         	MasterGA masterGA = new MasterGA(Integer.parseInt(args[1]),Integer.parseInt(args[2]));
         	masterGA.init();
         	masterGA.start();
         }
         else if("slave".equals(args[0])){
+    	System.out.println("inside slave");
         	//eg: java GA slave 19.2.4.1 3233
         	SlaveGA slaveGA = new SlaveGA(args[1],Integer.parseInt(args[2]));
         	slaveGA.init();
         	slaveGA.start();
         }
+    	System.out.println("exiting");
+
     }
 
 }

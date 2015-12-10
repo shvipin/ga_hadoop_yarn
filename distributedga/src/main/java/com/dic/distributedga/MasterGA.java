@@ -11,6 +11,7 @@ import com.dic.distributedga.comm.GAWorkContext;
 import com.dic.distributedga.comm.IReceiverListener;
 import com.dic.distributedga.comm.Receiver;
 import com.dic.distributedga.comm.Sender;
+import com.dic.distributedga.core.Individual;
 import com.dic.distributedga.core.Population;
 
 public class MasterGA {
@@ -131,8 +132,7 @@ public class MasterGA {
 	}
 
 	private void startAndDistributeGA() {
-		String soln = "111000000000000000000000000000000000000000000000000000000001111";
-
+		String soln = "111000000000010101011010101111010000010111110101010101111010101111101010100000001111";
 		Population aPop = new Population(50, true);
 
 		// break pop into 2 parts. send to 2 clients. 6790, 6791 port

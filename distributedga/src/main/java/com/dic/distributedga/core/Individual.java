@@ -12,7 +12,7 @@ public class Individual implements Serializable{
 			return o2.getFitness() - o1.getFitness();
 		}
 	};
-    public static int defaultGeneLength = 64;
+    public static int defaultGeneLength = 83;
     private byte[] genes = new byte[defaultGeneLength];
     // Cache
     private int fitness = 0;
