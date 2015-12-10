@@ -1,5 +1,5 @@
 $HADOOP_HOME/bin/hadoop \
-jar /vagrant_host/distributedga/target/distributedga-1.0.jar com.dic.distributedga.yarn.Client \
+ com.dic.distributedga.yarn.Client \
 --appname genelengthga \
 --jar /vagrant_host/distributedga/target/distributedga-1.0.jar \
 --master_memory 1024 \
