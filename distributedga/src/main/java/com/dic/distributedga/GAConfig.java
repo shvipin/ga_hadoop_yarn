@@ -8,6 +8,7 @@ public class GAConfig {
 	public static final int  CONTAINER_MEMORY = 10;
 	public static final int  CONTAINER_V_CORES = 1;
 
+	private static GAConfig _instance = new GAConfig();
 	private String appName;
 	private int masterMemory;
 	private int masterVCores;
@@ -15,6 +16,13 @@ public class GAConfig {
 	private int containersMemory;
 	private int containersVCores;
 	private int containersCount;
+		
+	private GAConfig(){}
+	
+	public static GAConfig getInstance(){
+		return _instance;
+	}
+	
 	/**
 	 * @return the appName
 	 */
