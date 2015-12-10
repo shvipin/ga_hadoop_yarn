@@ -1,0 +1,5 @@
+$HADOOP_HOME/bin/hadoop \
+jar /vagrant_host/gene-mapping/target/uber-gene-mapping-1.0.jar \
+com.genes.TestGA \
+/vagrant_host/gene-mapping/target/uber-gene-mapping-1.0.jar \
+

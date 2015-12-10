@@ -44,6 +44,7 @@ import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.util.ConverterUtils;
 
+import com.dic.distributedga.GAConfig;
 import com.dic.distributedga.Utils;
 
 public class Client {
@@ -54,7 +55,7 @@ public class Client {
 
 	private Options opts;
 	private boolean debugFlag;
-	private String log4jPropFile;
+	private String log4jPropFile = "";
 	private String appName;
 	private int amMemory;
 	private int amVCores;
@@ -66,90 +67,24 @@ public class Client {
 	private Configuration conf;
 	private String amMainClass;
 	private YarnClient yarnClient;
+	private GAConfig gaConfig;
 
-	public static void main(String[] args) {
-		boolean result = false;
-		Client client = new Client();
-
-		try {
-
-			client.init(args);
-			result = client.run();
-
-		} catch (ParseException e) {
-			e.printStackTrace();
-			log.fatal("Error running client");
-			System.exit(2);
-		} catch (IllegalArgumentException e) {
-			e.getLocalizedMessage();
-			client.printUsage();
-			System.exit(2);
-		} catch (YarnException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		if (result) {
-			log.info("Application completed successfully");
-			System.exit(0);
-		}
-
-		log.info("Applicatoin failed to complete successfully");
-		System.exit(1);
-
+	public Client(GAConfig ga){
+		this.gaConfig = ga;
 	}
 
-	public Client() {
-		this(new YarnConfiguration());
-	}
-
-	public Client(Configuration config) {
-		this("com.dic.distributedga.yarn.ApplicationMasterGA", config);
-	}
-
-	public Client(String amMainClass, Configuration config) {
-
-		this.conf = config;
-		this.amMainClass = amMainClass;
+	public boolean init(){
+		this.amMainClass = "com.dic.distributedga.yarn.ApplicationMasterGA";
+		conf = new YarnConfiguration();
 		yarnClient = YarnClient.createYarnClient();
 		yarnClient.init(conf);
-		opts = new Options();
-		opts.addOption("appname", true, "Application name. Default value - DistributedGA");
-		opts.addOption("master_memory", true, "Amount of memory in MB to be requested to run the application master");
-		opts.addOption("master_vcores", true, "Amount of virtual cores to be requested to run the application master");
-		opts.addOption("jar", true, "Jar file containing the application master");
-		opts.addOption("container_memory", true, "Amount of memory in MB to be requested to run the shell command");
-		opts.addOption("container_vcores", true, "Amount of virtual cores to be requested to run the shell command");
-		opts.addOption("num_containers", true, "No. of containers on which the shell command needs to be executed");
-		opts.addOption("debug", false, "Dump out debug information");
-		opts.addOption("help", false, "Print usage");
-	}
-
-	public boolean init(String[] args) throws ParseException {
 		log.info("Initializing client");
-		CommandLine cliParser = new GnuParser().parse(opts, args);
 
-		if (args.length == 0) {
-			throw new IllegalArgumentException("No args specified for client to initialize");
-		}
-
-		if (cliParser.hasOption("help")) {
-			printUsage();
-			return false;
-		}
-
-		if (!cliParser.hasOption("jar")) {
-			throw new IllegalArgumentException("No jar file specified for application master");
-		}
-
-		debugFlag = Boolean.parseBoolean(cliParser.getOptionValue("debug", "false"));
-		appName = cliParser.getOptionValue("appname", "DistributedGA");
-		amJarPath = cliParser.getOptionValue("jar");
-		amMemory = Integer.parseInt(cliParser.getOptionValue("master_memory", "10"));
-		amVCores = Integer.parseInt(cliParser.getOptionValue("master_vcores", "1"));
+		
+		appName = gaConfig.getAppName();
+		amJarPath = gaConfig.getJarPath();
+		amMemory = gaConfig.getMasterMemory();
+		amVCores = gaConfig.getMasterVCores();
 
 		if (amMemory <= 0) {
 			throw new IllegalArgumentException(
@@ -160,9 +95,9 @@ public class Client {
 					+ " Specified virtual cores=" + amVCores);
 		}
 
-		containerMemory = Integer.parseInt(cliParser.getOptionValue("container_memory", "10"));
-		containerVirtualCores = Integer.parseInt(cliParser.getOptionValue("container_vcores", "1"));
-		numContainers = Integer.parseInt(cliParser.getOptionValue("num_containers", "1"));
+		containerMemory = gaConfig.getContainersMemory();
+		containerVirtualCores = gaConfig.getContainersVCores();
+		numContainers = gaConfig.getContainersCount();
 
 		if (containerMemory < 0 || containerVirtualCores < 0 || numContainers < 1) {
 			throw new IllegalArgumentException("Invalid no. of containers or container memory/vcores specified,"
@@ -170,14 +105,9 @@ public class Client {
 					+ containerVirtualCores + ", numContainer=" + numContainers);
 		}
 
-		log4jPropFile = cliParser.getOptionValue("log_porperties", "");
 		return true;
+		
 	}
-
-	private void printUsage() {
-		new HelpFormatter().printHelp("Client", opts);
-	}
-
 	public boolean run() throws YarnException, IOException {
 		log.info("Running client");
 		yarnClient.start();

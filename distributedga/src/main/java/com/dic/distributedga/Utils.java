@@ -14,6 +14,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 public class Utils {
 
+
 	public static final int MSG_TERMINATE = 0x1;
 	public static final int MSG_INIT_POP = 0x2;
 	public static final int MSG_MIGRATION_POP = 0x4;
