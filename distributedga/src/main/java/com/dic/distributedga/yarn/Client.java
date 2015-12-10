@@ -201,7 +201,7 @@ public class Client {
 		log.info("set up master command");
 		vargs.add(Environment.JAVA_HOME.$$() + "/bin/java");
 		vargs.add("-Xms" + amMemory + "m");
-		vargs.add(amMainClass);
+		vargs.add(ApplicationMasterGA.class.getCanonicalName());
 		vargs.add("--container_memory " + String.valueOf(containerMemory));
 		vargs.add("--container_vcores " + String.valueOf(containerVirtualCores));
 		vargs.add("--num_containers " + String.valueOf(numContainers));

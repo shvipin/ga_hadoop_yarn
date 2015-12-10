@@ -7,6 +7,7 @@ public class GAConfig {
 	public static final int  MASTER_V_CORES = 1;
 	public static final int  CONTAINER_MEMORY = 10;
 	public static final int  CONTAINER_V_CORES = 1;
+	public static final int  DEFAULT_PORT = 6000;
 
 	private String appName;
 	private int masterMemory;
@@ -15,6 +16,8 @@ public class GAConfig {
 	private int containersMemory;
 	private int containersVCores;
 	private int containersCount;
+	private int portNo;
+	
 	/**
 	 * @return the appName
 	 */
@@ -116,4 +119,18 @@ public class GAConfig {
 		this.containersCount = containersCount;
 	}
 	
+	/**
+	 * @return the portNo
+	 */
+	public int getPortNo() {
+		if(portNo == 0)
+			return DEFAULT_PORT;
+		return portNo;
+	}
+	/**
+	 * @param portNo the portNo to set
+	 */
+	public void setPortNo(int portNo) {
+		this.portNo = portNo;
+	}
 }

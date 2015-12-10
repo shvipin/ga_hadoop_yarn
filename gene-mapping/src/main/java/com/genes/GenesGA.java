@@ -15,6 +15,7 @@ public class GenesGA {
 		config.setContainersMemory(1024);
 		config.setContainersVCores(1);
 		config.setJarPath(args[0]);
+		config.setPortNo(6000);
 		
 		//set extend required classes abstract function and add those 
 		//classes in GAConfig.
