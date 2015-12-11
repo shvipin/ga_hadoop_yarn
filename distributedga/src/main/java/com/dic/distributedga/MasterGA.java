@@ -1,6 +1,7 @@
 package com.dic.distributedga;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
@@ -84,7 +85,7 @@ public class MasterGA {
 
 	}
 
-	public void start() throws InstantiationException, IllegalAccessException {
+	public void start() throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 		try {
 
 			for (int i = 0; i < slavesCount; i++) {
@@ -123,7 +124,7 @@ public class MasterGA {
 		startAndDistributeGA();
 	}
 
-	private void startAndDistributeGA() throws InstantiationException, IllegalAccessException {
+	private void startAndDistributeGA() throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 
 		GAOperators gaOperator = (GAOperators)gaConfig.getDerGAOperators().newInstance();
 		BasePopulation startPop = gaOperator.initStartPopulation();

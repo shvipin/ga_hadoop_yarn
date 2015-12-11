@@ -119,7 +119,7 @@ public class SlaveGA {
 	}
 
 	public void start() throws InstantiationException, IllegalAccessException, NoSuchMethodException, SecurityException,
-			IllegalArgumentException, InvocationTargetException {
+			IllegalArgumentException, InvocationTargetException, CloneNotSupportedException {
 		// First task tell master I am ready
 		try {
 
@@ -159,7 +159,7 @@ public class SlaveGA {
 	}
 
 	public void processBasePopulation() throws NoSuchMethodException, SecurityException, InstantiationException,
-			IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+			IllegalAccessException, IllegalArgumentException, InvocationTargetException, CloneNotSupportedException {
 
 		GAOperators gaOperator = (GAOperators) gaConfig.getDerGAOperators().newInstance();
 
@@ -258,6 +258,8 @@ public class SlaveGA {
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
 		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		} catch (CloneNotSupportedException e) {
 			e.printStackTrace();
 		}
 		

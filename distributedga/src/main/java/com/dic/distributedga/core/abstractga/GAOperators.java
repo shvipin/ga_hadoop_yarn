@@ -1,5 +1,7 @@
 package com.dic.distributedga.core.abstractga;
 
+import java.lang.reflect.InvocationTargetException;
+
 import com.dic.distributedga.GAConfig;
 
 public abstract class GAOperators {
@@ -36,7 +38,7 @@ public abstract class GAOperators {
 	}
 
 	// Mutate an individual
-	public void MutationFunction(BaseChromosome indiv) {
+	public void mutationFunction(BaseChromosome indiv) {
 		// Loop through genes
 		for (int i = 0; i < indiv.size(); i++) {
 			if (Math.random() <= getMutationRate()) {
@@ -46,24 +48,9 @@ public abstract class GAOperators {
 		}
 	}
 
-	public abstract BasePopulation evolvePopulation(BasePopulation pop);
-
-	// Select individuals for crossover
-	public abstract void tournamentSelection(BasePopulation pop, BaseChromosome fittest);
-
-	public abstract BasePopulation initStartPopulation();
+	public abstract BasePopulation evolvePopulation(BasePopulation pop) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException;
+	public abstract void tournamentSelection(BasePopulation pop, BaseChromosome fittest) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException;
+	public abstract BasePopulation initStartPopulation() throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException;
+	public abstract boolean isConvergenceReached(BasePopulation pop) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException;
 	
-	public abstract boolean isConvergenceReached(BasePopulation pop);
-	// {
-	// // Create a tournament population
-	// PopulationC tournament = new PopulationC(tournamentSize, false);
-	// // For each place in the tournament get a random individual
-	// for (int i = 0; i < tournamentSize; i++) {
-	// int randomId = (int) (Math.random() * pop.size());
-	// tournament.saveChromosome( pop.getChromosome(randomId));
-	// }
-	// // Get the fittest
-	// Chromosome fittest = tournament.getFittest();
-	// return fittest;
-	// }
 }
