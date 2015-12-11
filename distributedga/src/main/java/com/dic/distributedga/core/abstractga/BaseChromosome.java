@@ -9,6 +9,12 @@ public abstract class BaseChromosome {
 	
 	public BaseChromosome(Class<? extends BaseGene> geneClass, int geneLength) {
 		this.genes = (BaseGene[]) Array.newInstance(geneClass, geneLength);
+		this.geneLength = geneLength;
+	}
+	
+	public BaseChromosome(BaseGene[] o_genes){
+		this.genes = o_genes;
+		this.geneLength = o_genes.length;
 	}
 	
 	public int size(){

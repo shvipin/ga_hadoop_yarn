@@ -6,7 +6,7 @@ import com.dic.distributedga.JobClient;
 public class GenesGA {
 
 	public static void main(String[] args){
-		GAConfig config = new GAConfig();
+		GAConfig config = GAConfig.getInstance();
 		
 		config.setAppName("GeneMappingGA");
 		config.setMasterMemory(1024);
