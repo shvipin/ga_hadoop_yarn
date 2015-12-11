@@ -11,17 +11,13 @@ public class BinaryPopulation extends BasePopulation{
 	Class chromosomeClass;
 	Class geneClass;
 	int geneLength;	
-	
+	int popSize;
 	public BinaryPopulation(Class<? extends BaseChromosome> chromosomeClass, Class<? extends BaseGene> geneClass, int populationSize, int geneLength, boolean initialise) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 		super(chromosomeClass, geneClass, populationSize, geneLength, initialise);
 		this.chromosomeClass = chromosomeClass;
 		this.geneClass = geneClass;
 		this.geneLength = geneLength;
-		// TODO Auto-generated constructor stub
-	}
-	
-	public BinaryPopulation(ArrayList<BaseChromosome> o_chromosomes) {
-		super(o_chromosomes);
+		this.popSize = populationSize;
 	}
 
 	@Override
@@ -37,7 +33,10 @@ public class BinaryPopulation extends BasePopulation{
 
 	@Override
 	public BasePopulation getFittestSubset(int migrantSize) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, CloneNotSupportedException {
-		BinaryPopulation pop = new BinaryPopulation( (ArrayList<BaseChromosome>) this.clone());
+		BinaryPopulation pop = new BinaryPopulation(chromosomeClass, geneClass, popSize, geneLength, false);
+		for(int i =0;i<popSize;i++)
+			pop.saveChromosome(getChromosome(i));
+		
 		pop.sortChromosomes();
 		
 		BinaryPopulation migrantPop = new BinaryPopulation(chromosomeClass, geneClass, migrantSize,geneLength, false);

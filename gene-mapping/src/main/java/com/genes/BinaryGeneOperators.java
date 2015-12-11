@@ -7,20 +7,16 @@ import com.dic.distributedga.core.abstractga.BasePopulation;
 import com.dic.distributedga.core.abstractga.GAOperators;
 
 public class BinaryGeneOperators extends GAOperators {
-	int tournamentSize = 5;
+	int tournamentSize = 10;
 	boolean elitism = true; // default
 	int popSize = 120;
 	FitnessEvaluator fitnessEvaluator = FitnessEvaluator.getInstance();
 	int geneLength = fitnessEvaluator.getSolutionLength();
 
-	public BinaryGeneOperators() {
-
-		// TODO Auto-generated constructor stub
-	}
-
 	@Override
 	public BasePopulation evolvePopulation(BasePopulation pop) throws InstantiationException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+
 		BinaryPopulation newPopulation = new BinaryPopulation(BinaryChromosome.class, BinaryGene.class, pop.size(),
 				geneLength, false);
 
@@ -62,11 +58,16 @@ public class BinaryGeneOperators extends GAOperators {
 		// Create a tournament population
 		BinaryPopulation tournament = new BinaryPopulation(BinaryChromosome.class, BinaryGene.class, tournamentSize,
 				geneLength, false);
+		System.out.println("Tournamenet selection begins ");
 		// For each place in the tournament get a random individual
 		for (int i = 0; i < tournamentSize; i++) {
 			int randomId = (int) (Math.random() * pop.size());
 			tournament.saveChromosome(pop.getChromosome(randomId));
+			System.out.println("input chromosome  "+randomId+ " fitness "+pop.getChromosome(randomId).getFitness());
 		}
+		
+		System.out.println("Tournamenet selection end ");
+		System.out.println("Fittest in tournament "+tournament.getFittest().getFitness());
 		// Get the fittest
 		return tournament.getFittest();
 	}
@@ -82,6 +83,7 @@ public class BinaryGeneOperators extends GAOperators {
 	@Override
 	public boolean isConvergenceReached(BasePopulation pop) throws InstantiationException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+
 		if (pop.getFittest().getFitness() >= FitnessEvaluator.getInstance().getBestFitness())
 			return true;
 		else

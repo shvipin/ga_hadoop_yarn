@@ -30,7 +30,7 @@ public abstract class BaseChromosome implements Serializable {
 	}
 
 	public void setGene(int index, BaseGene g) {
-		genes[index] = g;
+		genes[index].setGene(g.getGene());
 	}
 
 	public void generateChromosome() {

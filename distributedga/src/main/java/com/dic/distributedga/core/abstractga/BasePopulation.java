@@ -38,10 +38,6 @@ public abstract class BasePopulation implements Serializable {
 		individuals.add(chromosome);
 	}
 
-	public BasePopulation(ArrayList<BaseChromosome> o_chromosomes) {
-		this.individuals = o_chromosomes;
-	}
-
 	public BaseChromosome getChromosome(int index) {
 		return individuals.get(index);
 	}

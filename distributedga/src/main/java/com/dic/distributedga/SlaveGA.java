@@ -165,7 +165,7 @@ public class SlaveGA {
 
 		GAOperators gaOperator = (GAOperators) gaConfig.getDerGAOperators().newInstance();
 
-		while (terminate == false && gaOperator.isConvergenceReached(population)) {
+		while (terminate == false && !gaOperator.isConvergenceReached(population)) {
 			generationCount++;
 			if (generationCount % Utils.EVOLUTION_BATCH_SIZE == 0) {
 

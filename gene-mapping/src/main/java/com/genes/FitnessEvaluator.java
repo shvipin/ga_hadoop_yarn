@@ -1,7 +1,8 @@
 package com.genes;
 
 public class FitnessEvaluator {
-	private String optimalSolutionString = "11110000000000000111111110000000000000000";
+											
+	private String optimalSolutionString = "1111001010110111111100001111111000111000000";
 	private byte[] optimalSolution;
 	
 	private static FitnessEvaluator __instance = new FitnessEvaluator();
