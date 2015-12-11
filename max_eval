@@ -1,0 +1,4 @@
+$HADOOP_HOME/bin/hadoop \
+jar /vagrant_host/maxeval/target/uber-maxeval-0.0.1-SNAPSHOT.jar \
+com.maxeval.maxeval.GenesGA \
+/vagrant_host/maxeval/target/uber-maxeval-0.0.1-SNAPSHOT.jar \
