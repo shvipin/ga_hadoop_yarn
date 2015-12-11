@@ -43,6 +43,7 @@ public class Utils {
 	public static final String CMD_ARG_NM_DER_GENE_CLS = "der_gene_class";
 	public static final String CMD_ARG_NM_DER_GAOPERATOR_CLS = "der_gaoperator_class";
 	public static final String CMD_ARG_NM_PORT = "port";
+	public static final long SLAVE_MIGRATION_TIMEOUT = 5000;
 
 	public static Socket createSocket(String ipAddress, int portNo) throws UnknownHostException, IOException {
 		Socket socket = new Socket(ipAddress, portNo);

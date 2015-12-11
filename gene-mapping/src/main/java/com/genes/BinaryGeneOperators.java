@@ -7,9 +7,9 @@ import com.dic.distributedga.core.abstractga.BasePopulation;
 import com.dic.distributedga.core.abstractga.GAOperators;
 
 public class BinaryGeneOperators extends GAOperators {
-	int tournamentSize = 10;
+	int tournamentSize = 30;
 	boolean elitism = true; // default
-	int popSize = 120;
+	int popSize = 180;
 	FitnessEvaluator fitnessEvaluator = FitnessEvaluator.getInstance();
 	int geneLength = fitnessEvaluator.getSolutionLength();
 
@@ -58,16 +58,12 @@ public class BinaryGeneOperators extends GAOperators {
 		// Create a tournament population
 		BinaryPopulation tournament = new BinaryPopulation(BinaryChromosome.class, BinaryGene.class, tournamentSize,
 				geneLength, false);
-		System.out.println("Tournamenet selection begins ");
 		// For each place in the tournament get a random individual
 		for (int i = 0; i < tournamentSize; i++) {
 			int randomId = (int) (Math.random() * pop.size());
 			tournament.saveChromosome(pop.getChromosome(randomId));
-			System.out.println("input chromosome  "+randomId+ " fitness "+pop.getChromosome(randomId).getFitness());
 		}
 		
-		System.out.println("Tournamenet selection end ");
-		System.out.println("Fittest in tournament "+tournament.getFittest().getFitness());
 		// Get the fittest
 		return tournament.getFittest();
 	}

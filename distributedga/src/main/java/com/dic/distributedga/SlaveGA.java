@@ -183,12 +183,13 @@ public class SlaveGA {
 
 					if (migrantBasePopulation == null) {
 						try {
-							waitObject.wait();
+							waitObject.wait(Utils.SLAVE_MIGRATION_TIMEOUT);
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-						population.integrateMigrants(migrantBasePopulation);
+						if(migrantBasePopulation != null)
+							population.integrateMigrants(migrantBasePopulation);
 						migrantBasePopulation = null;
 					}
 

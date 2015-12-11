@@ -100,7 +100,7 @@ public class ApplicationMasterGA {
 	private AtomicInteger numFailedContainers;
 	private volatile boolean done;
 	private List<Thread> launchThreads;
-
+	private MasterGA masterGA;
 	private GAConfig gaConfig;
 
 	public static enum DSEvent {
@@ -207,7 +207,7 @@ public class ApplicationMasterGA {
 		}
 
 		public void addContainer(ContainerId containerId, Container container) {
-			containers.putIfAbsent(containerId, container);
+			//containers.putIfAbsent(containerId, container);
 		}
 
 		public void onContainerStarted(ContainerId arg0, Map<String, ByteBuffer> arg1) {
@@ -543,14 +543,14 @@ public class ApplicationMasterGA {
 
 	public void run() throws IOException, YarnException {
 		log.info("Starting application master");
-		// ga = new MasterGA(numTotalContainers, 6000);
+		masterGA = new MasterGA(gaConfig);
 		new Thread(new Runnable() {
-
+			
 			public void run() {
-				MasterGA ga = new MasterGA(gaConfig);
-				ga.init();
+				long timeStart = System.currentTimeMillis();
+				masterGA.init();
 				try {
-					ga.start();
+					masterGA.start();
 				} catch (InstantiationException e) {
 					e.printStackTrace();
 				} catch (IllegalAccessException e) {
@@ -565,6 +565,8 @@ public class ApplicationMasterGA {
 					e.printStackTrace();
 				}
 
+				long timeEnd = System.currentTimeMillis();
+				log.info("Total time execution by master GA is "+(timeEnd-timeStart)+"ms");
 			}
 		}).start();
 
@@ -637,6 +639,7 @@ public class ApplicationMasterGA {
 			amRmClient.addContainerRequest(containerAsk);
 		}
 		numRequestedContainers.set(numTotalContainers);
+
 
 	}
 
@@ -737,7 +740,7 @@ public class ApplicationMasterGA {
 
 	public boolean finish() {
 
-		while (!done && (numCompletedContainers.get() != numTotalContainers)) {
+		while (!masterGA.isCompleted()){//!done && (numCompletedContainers.get() != numTotalContainers)) {
 			try {
 				Thread.sleep(300);
 			} catch (InterruptedException e) {
@@ -766,10 +769,10 @@ public class ApplicationMasterGA {
 		// signal to the RM
 		log.info("Application completed. Signalling finish to RM");
 
-		FinalApplicationStatus appStatus;
+		FinalApplicationStatus appStatus = masterGA.isCompleted()?FinalApplicationStatus.SUCCEEDED:FinalApplicationStatus.FAILED;
 		String appMessage = null;
-		boolean success = true;
-		if (numFailedContainers.get() == 0 && numCompletedContainers.get() == numTotalContainers) {
+		boolean success = masterGA.isCompleted();
+		if (success){//numFailedContainers.get() == 0 && numCompletedContainers.get() == numTotalContainers) {
 			appStatus = FinalApplicationStatus.SUCCEEDED;
 		} else {
 			appStatus = FinalApplicationStatus.FAILED;

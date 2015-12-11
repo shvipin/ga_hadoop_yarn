@@ -26,8 +26,10 @@ public class MasterGA {
 	private volatile int message = 0;
 	private final Object waitObject = new Object();
 	private HashMap<String, WorkerInfo> workerTable;
+	private HashMap<String, WorkerInfo> failedWorkerTable;
 	private LinkedList<String> receivedMigrantsFrom;
 	private BasePopulation optimalResult;
+	private volatile boolean completedStatus;
 	
 	private IReceiverListener receiverListener = new IReceiverListener() {
 
@@ -76,6 +78,7 @@ public class MasterGA {
 	public void init() {
 		try {
 			workerTable = new HashMap<String, WorkerInfo>();
+			failedWorkerTable = new HashMap<String, WorkerInfo>();
 			receiver = new Receiver(listenPort, 0);
 			sender = new Sender();
 			receivedMigrantsFrom = new LinkedList<String>();
@@ -143,7 +146,9 @@ public class MasterGA {
 		while (iterator.hasNext()) {
 			WorkerInfo worker = iterator.next();
 			try {
-				sender.sendInitPopulation(partitionedPop[i++], worker.getSendStream());
+				sender.sendInitPopulation(partitionedPop[i], worker.getSendStream());
+				worker.setPoplulation(partitionedPop[i]);
+				i++;
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -211,9 +216,12 @@ public class MasterGA {
 				}
 			}
 		}
-
+		completedStatus = true;
 		System.out.println("Best solution found :");
 		System.out.println(optimalResult.getFittest());
 
+	}
+	public boolean isCompleted(){
+		return completedStatus;
 	}
 }

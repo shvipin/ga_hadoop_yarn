@@ -11,7 +11,7 @@ public class GenesGA {
 		config.setAppName("GeneMappingGA");
 		config.setMasterMemory(1024);
 		config.setMasterVCores(1);
-		config.setContainersCount(2);
+		config.setContainersCount(3);
 		config.setContainersMemory(1024);
 		config.setContainersVCores(1);
 		config.setJarPath(args[0]);
