@@ -6,11 +6,6 @@ public abstract class GAOperators {
 	private double selectionBias = 0.5; // default
 	private double mutationRate = 0.015; // deafult
 
-	public GAOperators(double selectionBias, double mutationRate) {
-		this.selectionBias = selectionBias;
-		this.mutationRate = mutationRate;
-	}
-
 	public double getSelectionBias() {
 		return selectionBias;
 	}
@@ -56,6 +51,9 @@ public abstract class GAOperators {
 	// Select individuals for crossover
 	public abstract void tournamentSelection(BasePopulation pop, BaseChromosome fittest);
 
+	public abstract BasePopulation initStartPopulation();
+	
+	public abstract boolean isConvergenceReached(BasePopulation pop);
 	// {
 	// // Create a tournament population
 	// PopulationC tournament = new PopulationC(tournamentSize, false);

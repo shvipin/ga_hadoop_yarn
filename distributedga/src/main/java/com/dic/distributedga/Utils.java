@@ -26,7 +26,23 @@ public class Utils {
 	public static final String USER_GA_JAR_HDFS_LOC = "USER_GA_JAR_HDFS_LOC";
 	public static final String USER_GA_JAR_HDFS_TIMESTAMP = "USER_GA_JAR_HDFS_TIMESTAMP";
 	public static final String USER_GA_JAR_HDFS_LEN = "USER_GA_JAR_HDFS_LEN";
-	public static final	String GA_PORT_STRING = "6000";
+	
+	public static final String CMD_ARG_HELP = "help";
+	public static final String CMD_ARG_AM_CONTAINER_MEM = "container_memory";
+	public static final String CMD_ARG_AM_CONTAINER_VCORE = "container_vcores";
+	public static final String CMD_ARG_AM_CONTAINER_NUM = "container_num";
+	public static final String CMD_ARG_AM_DER_POP_CLS = "der_population_class";
+	public static final String CMD_ARG_AM_DER_CHROMOSOME_CLS = "der_chromosome_class";
+	public static final String CMD_ARG_AM_DER_GENE_CLS = "der_gene_class";
+	public static final String CMD_ARG_AM_DER_GAOPERATOR_CLS = "der_gaoperator_class";
+	public static final String CMD_ARG_AM_PORT = "port";
+	
+	public static final String CMD_ARG_NM_SERVER_IP = "server";
+	public static final String CMD_ARG_NM_DER_POP_CLS = "der_population_class";
+	public static final String CMD_ARG_NM_DER_CHROMOSOME_CLS = "der_chromosome_class";
+	public static final String CMD_ARG_NM_DER_GENE_CLS = "der_gene_class";
+	public static final String CMD_ARG_NM_DER_GAOPERATOR_CLS = "der_gaoperator_class";
+	public static final String CMD_ARG_NM_PORT = "port";
 
 	public static Socket createSocket(String ipAddress, int portNo) throws UnknownHostException, IOException {
 		Socket socket = new Socket(ipAddress, portNo);

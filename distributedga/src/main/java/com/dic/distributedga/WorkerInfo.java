@@ -4,14 +4,14 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-import com.dic.distributedga.core.Population;
+import com.dic.distributedga.core.abstractga.BasePopulation;
 
 public class WorkerInfo {
 
 	private String ipAddress;
 	private int portNo;
-	private Population poplulation;
-	private Population migrantPopulation;
+	private BasePopulation poplulation;
+	private BasePopulation migrantPopulation;
 	private Socket socket;
 	private ObjectOutputStream sendStream;
 	private WorkerSocketThread workerSocketThread;
@@ -48,13 +48,13 @@ public class WorkerInfo {
 	/**
 	 * @return the poplulation
 	 */
-	public Population getPoplulation() {
+	public BasePopulation getPoplulation() {
 		return poplulation;
 	}
 	/**
 	 * @param poplulation the poplulation to set
 	 */
-	public void setPoplulation(Population poplulation) {
+	public void setPoplulation(BasePopulation poplulation) {
 		this.poplulation = poplulation;
 	}
 
@@ -95,14 +95,14 @@ public class WorkerInfo {
 	/**
 	 * @return the migrantPopulation
 	 */
-	public Population getMigrantPopulation() {
+	public BasePopulation getMigrantPopulation() {
 		return migrantPopulation;
 	}
 	
 	/**
 	 * @param migrantPopulation the migrantPopulation to set
 	 */
-	public void setMigrantPopulation(Population migrantPopulation) {
+	public void setMigrantPopulation(BasePopulation migrantPopulation) {
 		this.migrantPopulation = migrantPopulation;
 	}
 }

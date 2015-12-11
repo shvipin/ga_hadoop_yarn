@@ -53,7 +53,6 @@ public class Client {
 	private static final String log4jHDFSDesPath = "log4j.properties";
 	public static final String USER_GA_JAR_NAME = "ga.jar";
 
-	private Options opts;
 	private boolean debugFlag;
 	private String log4jPropFile = "";
 	private String appName;
@@ -65,7 +64,6 @@ public class Client {
 	private int numContainers;
 
 	private Configuration conf;
-	private String amMainClass;
 	private YarnClient yarnClient;
 	private GAConfig gaConfig;
 
@@ -74,7 +72,6 @@ public class Client {
 	}
 
 	public boolean init(){
-		this.amMainClass = "com.dic.distributedga.yarn.ApplicationMasterGA";
 		conf = new YarnConfiguration();
 		yarnClient = YarnClient.createYarnClient();
 		yarnClient.init(conf);
@@ -202,9 +199,14 @@ public class Client {
 		vargs.add(Environment.JAVA_HOME.$$() + "/bin/java");
 		vargs.add("-Xms" + amMemory + "m");
 		vargs.add(ApplicationMasterGA.class.getCanonicalName());
-		vargs.add("--container_memory " + String.valueOf(containerMemory));
-		vargs.add("--container_vcores " + String.valueOf(containerVirtualCores));
-		vargs.add("--num_containers " + String.valueOf(numContainers));
+		vargs.add("--"+Utils.CMD_ARG_AM_CONTAINER_MEM +" "+ String.valueOf(containerMemory));
+		vargs.add("--"+Utils.CMD_ARG_AM_CONTAINER_VCORE +" " + String.valueOf(containerVirtualCores));
+		vargs.add("--"+Utils.CMD_ARG_AM_CONTAINER_NUM +" "+ String.valueOf(numContainers));
+		vargs.add("--"+Utils.CMD_ARG_AM_DER_POP_CLS +" "+ gaConfig.getDerPopulation().getCanonicalName());
+		vargs.add("--"+Utils.CMD_ARG_AM_DER_CHROMOSOME_CLS +" "+ gaConfig.getDerChromosome().getCanonicalName());
+		vargs.add("--"+Utils.CMD_ARG_AM_DER_GENE_CLS +" "+ gaConfig.getDerGene().getCanonicalName());
+		vargs.add("--"+Utils.CMD_ARG_AM_DER_GAOPERATOR_CLS +" "+ gaConfig.getDerGAOperators().getCanonicalName());
+		vargs.add("--"+Utils.CMD_ARG_AM_PORT +" "+ gaConfig.getPortNo());
 
 		if (debugFlag) {
 			vargs.add("--debug");

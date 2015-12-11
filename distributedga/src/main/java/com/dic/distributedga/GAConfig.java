@@ -10,6 +10,7 @@ public class GAConfig {
 	public static final int  DEFAULT_PORT = 6000;
 
 	private static GAConfig _instance = new GAConfig();
+
 	private String appName;
 	private int masterMemory;
 	private int masterVCores;
@@ -18,13 +19,12 @@ public class GAConfig {
 	private int containersVCores;
 	private int containersCount;
 	private int portNo;
+	
+	private Class derChromosome;
+	private Class derGene;
+	private Class derPopulation;
+	private Class derGAOperators;
 		
-	private GAConfig(){}
-	
-	public static GAConfig getInstance(){
-		return _instance;
-	}
-	
 	/**
 	 * @return the appName
 	 */
@@ -139,5 +139,62 @@ public class GAConfig {
 	 */
 	public void setPortNo(int portNo) {
 		this.portNo = portNo;
+	}
+	
+	
+	/**
+	 * @return the derChromosome
+	 */
+	public Class getDerChromosome() {
+		return derChromosome;
+	}
+
+	/**
+	 * @param derChromosome the derChromosome to set
+	 */
+	public void setDerChromosome(Class derChromosome) {
+		this.derChromosome = derChromosome;
+	}
+
+	/**
+	 * @return the derGene
+	 */
+	public Class getDerGene() {
+		return derGene;
+	}
+
+	/**
+	 * @param derGene the derGene to set
+	 */
+	public void setDerGene(Class derGene) {
+		this.derGene = derGene;
+	}
+
+	/**
+	 * @return the derPopulation
+	 */
+	public Class getDerPopulation() {
+		return derPopulation;
+	}
+
+	/**
+	 * @param derPopulation the derPopulation to set
+	 */
+	public void setDerPopulation(Class derPopulation) {
+		this.derPopulation = derPopulation;
+	}
+
+	/**
+	 * @return the derGAOperators
+	 */
+	public Class getDerGAOperators() {
+		return derGAOperators;
+	}
+
+	/**
+	 * @param derGAOperators the derGAOperators to set
+	 */
+	public void setDerGAOperators(Class derGAOperators) {
+		this.derGAOperators = derGAOperators;
 	}
 }

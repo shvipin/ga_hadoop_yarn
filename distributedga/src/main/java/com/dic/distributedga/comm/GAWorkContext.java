@@ -2,11 +2,11 @@ package com.dic.distributedga.comm;
 
 import java.io.Serializable;
 
-import com.dic.distributedga.core.Population;
+import com.dic.distributedga.core.abstractga.BasePopulation;
 
 public class GAWorkContext implements Serializable {
 	
-	Population wPopulation;	
+	BasePopulation wPopulation;	
 	/*Solution criteria*/
 	String wSolution;
 	/*Other genetic algorithm context paramters..  
@@ -22,11 +22,11 @@ public class GAWorkContext implements Serializable {
 		return flag;
 	}
 	
-	public Population getPopulation() {
+	public BasePopulation getPopulation() {
 		return wPopulation;
 	}
 
-	public void setPopulation(Population wPopulation) {
+	public void setPopulation(BasePopulation wPopulation) {
 		this.wPopulation = wPopulation;
 	}
 

@@ -39,4 +39,11 @@ public abstract class BaseChromosome {
 			return (int) (o2.getFitness() - o1.getFitness());
 		}
 	};
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		for(BaseGene gene:genes){
+			sb.append(gene.getGene()+"");
+		}
+		return sb.toString();
+	};
 }

@@ -5,7 +5,7 @@ import java.io.ObjectOutputStream;
 import java.net.UnknownHostException;
 
 import com.dic.distributedga.Utils;
-import com.dic.distributedga.core.Population;
+import com.dic.distributedga.core.abstractga.BasePopulation;
 
 /**
  * This class will send messages to other nodes. Messages can be sending good
@@ -25,17 +25,16 @@ public class Sender {
 		
 		sendGAWorkContext(gaWorkContext,os);
 	}
-	public void sendInitPopulation(Population population, String sol, ObjectOutputStream os) throws UnknownHostException, IOException  {
+	public void sendInitPopulation(BasePopulation population, ObjectOutputStream os) throws UnknownHostException, IOException  {
 
 		GAWorkContext obj = new GAWorkContext();
 		obj.setPopulation(population);
-		obj.setSolution(sol);
 		obj.setFlag(Utils.MSG_INIT_POP);
 		
 		sendGAWorkContext(obj,os);
 	}
 
-	public void migratePopulation(Population population, ObjectOutputStream os) throws UnknownHostException, IOException {
+	public void migratePopulation(BasePopulation population, ObjectOutputStream os) throws UnknownHostException, IOException {
 		GAWorkContext obj = new GAWorkContext();
 		obj.setPopulation(population);
 		obj.setFlag(Utils.MSG_MIGRATION_POP);
@@ -43,7 +42,7 @@ public class Sender {
 		sendGAWorkContext(obj,os);
 	}
 
-	public void sendTerminateMsg(Population population, ObjectOutputStream os) throws UnknownHostException, IOException {
+	public void sendTerminateMsg(BasePopulation population, ObjectOutputStream os) throws UnknownHostException, IOException {
 		GAWorkContext obj = new GAWorkContext();
 		obj.setPopulation(population);
 		obj.setFlag(Utils.MSG_TERMINATE);

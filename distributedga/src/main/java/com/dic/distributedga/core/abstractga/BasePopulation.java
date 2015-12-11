@@ -11,7 +11,12 @@ public abstract class BasePopulation {
 	Class chromosomeClass;
 	Class geneClass;
 	int geneLength;
-	public BasePopulation(Class<? extends BaseChromosome> chromosomeClass, Class<? extends BaseGene> geneClass, int populationSize, int geneLength, boolean initialise) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+	public BasePopulation(Class<? extends BaseChromosome> chromosomeClass, 
+			Class<? extends BaseGene> geneClass, 
+			int populationSize, 
+			int geneLength, 
+			boolean initialise) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+		
 		individuals = new ArrayList<BaseChromosome>(populationSize);
 		this.chromosomeClass = chromosomeClass;
 		this.geneClass = geneClass;
@@ -25,7 +30,7 @@ public abstract class BasePopulation {
 		}
 	}
 	
-	void saveChromosome(BaseChromosome chromosome){
+	public void saveChromosome(BaseChromosome chromosome){
 		individuals.add(chromosome);
 	}
 	

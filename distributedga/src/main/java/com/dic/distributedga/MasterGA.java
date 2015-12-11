@@ -11,13 +11,14 @@ import com.dic.distributedga.comm.GAWorkContext;
 import com.dic.distributedga.comm.IReceiverListener;
 import com.dic.distributedga.comm.Receiver;
 import com.dic.distributedga.comm.Sender;
-import com.dic.distributedga.core.Individual;
-import com.dic.distributedga.core.Population;
+import com.dic.distributedga.core.abstractga.BasePopulation;
+import com.dic.distributedga.core.abstractga.GAOperators;
 
 public class MasterGA {
 
 	private Sender sender;
 	private Receiver receiver;
+	private GAConfig gaConfig;
 	private int listenPort;
 	private int slavesCount;
 	private int readySlavesCount;
@@ -25,7 +26,8 @@ public class MasterGA {
 	private final Object waitObject = new Object();
 	private HashMap<String, WorkerInfo> workerTable;
 	private LinkedList<String> receivedMigrantsFrom;
-	private Population optimalResult;
+	private BasePopulation optimalResult;
+	
 	private IReceiverListener receiverListener = new IReceiverListener() {
 
 		public void migrantPopReceivedEvent(String ipAddress, GAWorkContext gaWorkContext) {
@@ -64,20 +66,10 @@ public class MasterGA {
 		}
 	};
 
-	public MasterGA(int slavesCount, int portNo) {
-		this.slavesCount = slavesCount;
-		this.listenPort = portNo;
-	}
-
-	public MasterGA(String[] slaveIPs, int portNo) {
-		this.slavesCount = slaveIPs.length;
-		this.listenPort = portNo;
-
-		/*
-		 * for(int i=0;i<slavesCount;i++){ WorkerInfo worker = new
-		 * WorkerInfo(slaveIPs[i],portNo); workerTable.put(slaveIPs[i], worker);
-		 * }
-		 */
+	public MasterGA(GAConfig gaConfig) {
+		this.gaConfig = gaConfig;
+		this.slavesCount = gaConfig.getContainersCount();
+		this.listenPort = gaConfig.getPortNo();
 	}
 
 	public void init() {
@@ -92,7 +84,7 @@ public class MasterGA {
 
 	}
 
-	public void start() {
+	public void start() throws InstantiationException, IllegalAccessException {
 		try {
 
 			for (int i = 0; i < slavesCount; i++) {
@@ -131,21 +123,26 @@ public class MasterGA {
 		startAndDistributeGA();
 	}
 
-	private void startAndDistributeGA() {
-		String soln = "111000000000010101011010101111010000010111110101010101111010101111101010100000001111";
-		Population aPop = new Population(50, true);
+	private void startAndDistributeGA() throws InstantiationException, IllegalAccessException {
 
-		// break pop into 2 parts. send to 2 clients. 6790, 6791 port
-		Population[] p = new Population[2];
-		p[0] = aPop.getPopulationSubset(0, 24);
-		p[1] = aPop.getPopulationSubset(25, 49);
-
+		GAOperators gaOperator = (GAOperators)gaConfig.getDerGAOperators().newInstance();
+		BasePopulation startPop = gaOperator.initStartPopulation();
+	
+		int startPopSize = startPop.size();
+		int step = startPopSize/slavesCount;
+		BasePopulation[] partitionedPop = new BasePopulation[slavesCount];
+		
+		for(int i=0;i <slavesCount-1;i++){
+			partitionedPop[i] = startPop.getPopulationSubset(i*step, (i+1)*step-1);
+		}
+		partitionedPop[slavesCount-1] = startPop.getPopulationSubset((slavesCount-1)*step, startPopSize-1);
+		
 		Iterator<WorkerInfo> iterator = workerTable.values().iterator();
 		int i = 0;
 		while (iterator.hasNext()) {
 			WorkerInfo worker = iterator.next();
 			try {
-				sender.sendInitPopulation(p[i++], soln, worker.getSendStream());
+				sender.sendInitPopulation(partitionedPop[i++], worker.getSendStream());
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
