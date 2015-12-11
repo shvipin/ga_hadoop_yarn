@@ -17,6 +17,14 @@ public class GenesGA {
 		config.setJarPath(args[0]);
 		config.setPortNo(6000);
 		
+		config.setDerPopulation(BinaryPopulation.class);
+		config.setDerChromosome(BinaryChromosome.class);
+		config.setDerGene(BinaryGene.class);
+		config.setDerGAOperators(BinaryGeneOperators.class);
+
+		
+		
+		
 		//set extend required classes abstract function and add those 
 		//classes in GAConfig.
 		

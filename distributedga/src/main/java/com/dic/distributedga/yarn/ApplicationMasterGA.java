@@ -100,7 +100,7 @@ public class ApplicationMasterGA {
 	private AtomicInteger numFailedContainers;
 	private volatile boolean done;
 	private List<Thread> launchThreads;
-	
+
 	private GAConfig gaConfig;
 
 	public static enum DSEvent {
@@ -270,19 +270,40 @@ public class ApplicationMasterGA {
 
 			localResources.put(GA_JAR_STRING_PATH, gaJarRes);
 
+			StringBuilder classPathEnv = new StringBuilder(Environment.CLASSPATH.$$())
+					.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("./*");
+
+			for (String c : conf.getStrings(YarnConfiguration.YARN_APPLICATION_CLASSPATH,
+					YarnConfiguration.DEFAULT_YARN_CROSS_PLATFORM_APPLICATION_CLASSPATH)) {
+				classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR);
+				classPathEnv.append(c.trim());
+			}
+
+			classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("./log4j.properties");
+
+			if (conf.getBoolean(YarnConfiguration.IS_MINI_YARN_CLUSTER, false)) {
+				classPathEnv.append(':');
+				classPathEnv.append(System.getProperty("java.class.path"));
+			}
+			
+			Map<String, String> env = new HashMap<String, String>();
+			env.put("CLASSPATH", classPathEnv.toString());
+			log.info(classPathEnv.toString());
 			// setup java executable command for worker nodes.
 			ArrayList<CharSequence> vargs = new ArrayList<CharSequence>();
 			log.info("set up master command");
 			vargs.add(Environment.JAVA_HOME.$$() + "/bin/java");
-			vargs.add("-Xms" + containerMemory + "m");
+			// vargs.add("-Xms" + containerMemory + "m");
 			vargs.add("-cp");
 			vargs.add(GA_JAR_STRING_PATH);
 			vargs.add("com.dic.distributedga.SlaveGA");
-			vargs.add("--"+Utils.CMD_ARG_NM_DER_POP_CLS +" "+ gaConfig.getDerPopulation().getCanonicalName());
-			vargs.add("--"+Utils.CMD_ARG_NM_DER_CHROMOSOME_CLS +" "+ gaConfig.getDerChromosome().getCanonicalName());
-			vargs.add("--"+Utils.CMD_ARG_NM_DER_GENE_CLS +" "+ gaConfig.getDerGene().getCanonicalName());
-			vargs.add("--"+Utils.CMD_ARG_NM_DER_GAOPERATOR_CLS +" "+ gaConfig.getDerGAOperators().getCanonicalName());
-			
+			vargs.add("--" + Utils.CMD_ARG_NM_DER_POP_CLS + " " + gaConfig.getDerPopulation().getCanonicalName());
+			vargs.add(
+					"--" + Utils.CMD_ARG_NM_DER_CHROMOSOME_CLS + " " + gaConfig.getDerChromosome().getCanonicalName());
+			vargs.add("--" + Utils.CMD_ARG_NM_DER_GENE_CLS + " " + gaConfig.getDerGene().getCanonicalName());
+			vargs.add(
+					"--" + Utils.CMD_ARG_NM_DER_GAOPERATOR_CLS + " " + gaConfig.getDerGAOperators().getCanonicalName());
+
 			String ip = System.getenv(Environment.NM_HOST.name());
 			try {
 				InetAddress address = InetAddress.getByName(ip);
@@ -291,8 +312,8 @@ public class ApplicationMasterGA {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			vargs.add("--"+Utils.CMD_ARG_NM_SERVER_IP+" "+ip);
-			vargs.add("--"+Utils.CMD_ARG_NM_PORT+" "+gaConfig.getPortNo());
+			vargs.add("--" + Utils.CMD_ARG_NM_SERVER_IP + " " + ip);
+			vargs.add("--" + Utils.CMD_ARG_NM_PORT + " " + gaConfig.getPortNo());
 
 			vargs.add("1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/SlaveGA.stdout");
 			vargs.add("2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/SlaveGA.stderr");
@@ -305,7 +326,7 @@ public class ApplicationMasterGA {
 			List<String> commands = new ArrayList<String>();
 			commands.add(command.toString());
 
-			ContainerLaunchContext ctx = ContainerLaunchContext.newInstance(localResources, null, commands, null,
+			ContainerLaunchContext ctx = ContainerLaunchContext.newInstance(localResources, env, commands, null,
 					allTokens.duplicate(), null);
 			amNmCallbackHandler.addContainer(container.getId(), container);
 			amNmClientAsync.startContainerAsync(container, ctx);
@@ -370,7 +391,7 @@ public class ApplicationMasterGA {
 
 		conf = new YarnConfiguration();
 		gaConfig = new GAConfig();
-		
+
 		opts = new Options();
 		opts.addOption(Utils.CMD_ARG_AM_CONTAINER_MEM, true, "Amount of memory in MB for slave containers");
 		opts.addOption(Utils.CMD_ARG_AM_CONTAINER_VCORE, true, "No. of virtual cores for slave containers");
@@ -380,8 +401,9 @@ public class ApplicationMasterGA {
 		opts.addOption(Utils.CMD_ARG_AM_DER_CHROMOSOME_CLS, true, "derived chromosome class name with package");
 		opts.addOption(Utils.CMD_ARG_AM_DER_GENE_CLS, true, " derived gene class name with package");
 		opts.addOption(Utils.CMD_ARG_AM_DER_GAOPERATOR_CLS, true, "derived gaoperator class name with package");
-		opts.addOption(Utils.CMD_ARG_AM_PORT, true, "port number on which communication will take place in distirbuted ga app");
-		
+		opts.addOption(Utils.CMD_ARG_AM_PORT, true,
+				"port number on which communication will take place in distirbuted ga app");
+
 	}
 
 	public boolean init(String[] args) throws ParseException, ClassNotFoundException {
@@ -401,7 +423,7 @@ public class ApplicationMasterGA {
 			}
 		}
 
-		if (cliParser.hasOption("help")) {
+		if (cliParser.hasOption(Utils.CMD_ARG_HELP)) {
 			printUsage(opts);
 			return false;
 		}
@@ -432,9 +454,9 @@ public class ApplicationMasterGA {
 				+ ", clustertimestamp=" + appAttemptId.getApplicationId().getClusterTimestamp() + ", attemptId="
 				+ appAttemptId.getAttemptId());
 
-		containerMemory = Integer.parseInt(cliParser.getOptionValue("container_memory", "10"));
-		containerVirtualCores = Integer.parseInt(cliParser.getOptionValue("container_vcores", "1"));
-		numTotalContainers = Integer.parseInt(cliParser.getOptionValue("num_containers", "1"));
+		containerMemory = Integer.parseInt(cliParser.getOptionValue(Utils.CMD_ARG_AM_CONTAINER_MEM, "10"));
+		containerVirtualCores = Integer.parseInt(cliParser.getOptionValue(Utils.CMD_ARG_AM_CONTAINER_VCORE, "1"));
+		numTotalContainers = Integer.parseInt(cliParser.getOptionValue(Utils.CMD_ARG_AM_CONTAINER_NUM, "1"));
 
 		if (numTotalContainers <= 0) {
 			throw new IllegalArgumentException("Invalid number of container for running this app");
@@ -444,25 +466,25 @@ public class ApplicationMasterGA {
 			throw new IllegalArgumentException("No ga jar given in arguments.");
 		}
 
-		if(!cliParser.hasOption(Utils.CMD_ARG_AM_DER_POP_CLS)){
+		if (!cliParser.hasOption(Utils.CMD_ARG_AM_DER_POP_CLS)) {
 			throw new IllegalArgumentException("Derived class for BasePopulation not provided");
 		}
-		if(!cliParser.hasOption(Utils.CMD_ARG_AM_DER_CHROMOSOME_CLS)){
+		if (!cliParser.hasOption(Utils.CMD_ARG_AM_DER_CHROMOSOME_CLS)) {
 			throw new IllegalArgumentException("Derived class for BaseChromosome not provided");
 		}
-		if(!cliParser.hasOption(Utils.CMD_ARG_AM_DER_GENE_CLS)){
+		if (!cliParser.hasOption(Utils.CMD_ARG_AM_DER_GENE_CLS)) {
 			throw new IllegalArgumentException("Derived class for BaseGene not provided");
 		}
-		if(!cliParser.hasOption(Utils.CMD_ARG_AM_DER_GAOPERATOR_CLS)){
+		if (!cliParser.hasOption(Utils.CMD_ARG_AM_DER_GAOPERATOR_CLS)) {
 			throw new IllegalArgumentException("Derived class for BaseOperator not provided");
 		}
-		
+
 		gaConfig.setDerPopulation(Class.forName(cliParser.getOptionValue(Utils.CMD_ARG_AM_DER_POP_CLS)));
 		gaConfig.setDerChromosome(Class.forName(cliParser.getOptionValue(Utils.CMD_ARG_AM_DER_CHROMOSOME_CLS)));
 		gaConfig.setDerGene(Class.forName(cliParser.getOptionValue(Utils.CMD_ARG_AM_DER_GENE_CLS)));
 		gaConfig.setDerGAOperators(Class.forName(cliParser.getOptionValue(Utils.CMD_ARG_AM_DER_GAOPERATOR_CLS)));
-		
-		if(cliParser.hasOption(Utils.CMD_ARG_AM_PORT)){
+
+		if (cliParser.hasOption(Utils.CMD_ARG_AM_PORT)) {
 			gaConfig.setPortNo(Integer.parseInt(cliParser.getOptionValue(Utils.CMD_ARG_AM_PORT)));
 		}
 

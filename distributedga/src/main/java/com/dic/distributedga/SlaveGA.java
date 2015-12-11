@@ -65,6 +65,7 @@ public class SlaveGA {
 	};
 
 	public SlaveGA() {
+		gaConfig = new GAConfig();
 		opts = new Options();
 		opts.addOption(Utils.CMD_ARG_AM_CONTAINER_MEM, true, "Amount of memory in MB for slave containers");
 		opts.addOption(Utils.CMD_ARG_HELP, false, "Print usage");
@@ -72,6 +73,7 @@ public class SlaveGA {
 		opts.addOption(Utils.CMD_ARG_NM_DER_CHROMOSOME_CLS, true, "derived chromosome class name with package");
 		opts.addOption(Utils.CMD_ARG_NM_DER_GENE_CLS, true, " derived gene class name with package");
 		opts.addOption(Utils.CMD_ARG_NM_DER_GAOPERATOR_CLS, true, "derived gaoperator class name with package");
+		opts.addOption(Utils.CMD_ARG_NM_SERVER_IP,true,"IP address of server");
 		opts.addOption(Utils.CMD_ARG_NM_PORT, true,
 				"port number on which communication will take place in distirbuted ga app");
 	}
@@ -204,7 +206,7 @@ public class SlaveGA {
 
 			int geneLength = population.getChromosome(0).size();
 
-			Class[] argType = { Class.class, Class.class, Integer.class, Integer.class, Boolean.class };
+			Class[] argType = { Class.class, Class.class, int.class, int.class, boolean.class };
 			Object[] args = { gaConfig.getDerChromosome(), gaConfig.getDerGene(), new Integer(1),
 					new Integer(geneLength), new Boolean(false) };
 			Constructor constructor = gaConfig.getDerPopulation().getConstructor(argType);

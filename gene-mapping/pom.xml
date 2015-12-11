@@ -48,6 +48,7 @@
 					<artifactSet>
 						<includes>
 							<include>com.dic:distributedga</include>
+							<include>commons-cli:commons-cli</include>
 						</includes>
 					</artifactSet>
 				</configuration>

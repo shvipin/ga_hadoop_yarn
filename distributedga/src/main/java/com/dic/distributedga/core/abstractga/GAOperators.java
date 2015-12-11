@@ -1,10 +1,11 @@
 package com.dic.distributedga.core.abstractga;
 
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 
 import com.dic.distributedga.GAConfig;
 
-public abstract class GAOperators {
+public abstract class GAOperators{
 	private double selectionBias = 0.5; // default
 	private double mutationRate = 0.015; // deafult
 
@@ -24,19 +25,8 @@ public abstract class GAOperators {
 		this.mutationRate = mutationRate;
 	}
 
-	public void crossoverFunction(BaseChromosome bc1, BaseChromosome bc2, BaseChromosome bcChild) {
-		// Loop through genes
-		for (int i = 0; i < bc1.size(); i++) {
-			// Crossover
-			if (Math.random() <= getSelectionBias()) {
-				bcChild.setGene(i, bc1.getGene(i));
-			} else {
-				bcChild.setGene(i, bc2.getGene(i));
-			}
-		}
-
-	}
-
+	
+	
 	// Mutate an individual
 	public void mutationFunction(BaseChromosome indiv) {
 		// Loop through genes
@@ -47,9 +37,10 @@ public abstract class GAOperators {
 			}
 		}
 	}
-
+	
+	public abstract BaseChromosome crossoverFunction(BaseChromosome bc1, BaseChromosome bc2 ) throws InstantiationException, IllegalAccessException;
 	public abstract BasePopulation evolvePopulation(BasePopulation pop) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException;
-	public abstract void tournamentSelection(BasePopulation pop, BaseChromosome fittest) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException;
+	public abstract BaseChromosome tournamentSelection(BasePopulation pop) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException;
 	public abstract BasePopulation initStartPopulation() throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException;
 	public abstract boolean isConvergenceReached(BasePopulation pop) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException;
 	

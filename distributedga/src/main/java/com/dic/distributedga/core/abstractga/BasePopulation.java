@@ -1,10 +1,12 @@
 package com.dic.distributedga.core.abstractga;
 
+import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public abstract class BasePopulation {
+public abstract class BasePopulation implements Serializable {
 	ArrayList<BaseChromosome> individuals;
 	Class chromosomeClass;
 	Class geneClass;
@@ -20,8 +22,13 @@ public abstract class BasePopulation {
 		this.geneLength = geneLength;
 		if (initialise) {
 			for (int i = 0; i < populationSize; i++) {
-				BaseChromosome individual = chromosomeClass.getDeclaredConstructor(geneClass, int.class)
-						.newInstance(geneClass, geneLength);
+				
+				Class[] argType = { Class.class, int.class};
+				Object[] args = { geneClass, new Integer(geneLength)};
+				Constructor constructor = chromosomeClass.getConstructor(argType);
+
+				BaseChromosome individual = (BaseChromosome)constructor.newInstance(args);
+						
 				individual.generateChromosome();
 				saveChromosome(individual);
 			}

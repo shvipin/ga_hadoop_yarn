@@ -1,6 +1,8 @@
 package com.dic.distributedga.core.abstractga;
 
-public abstract class BaseGene {
+import java.io.Serializable;
+
+public abstract class BaseGene implements Serializable {
 	byte gene;
 	
 	public void setGene(byte g){

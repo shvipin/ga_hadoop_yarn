@@ -5,7 +5,7 @@ import com.dic.distributedga.core.abstractga.BaseGene;
 
 public class BinaryChromosome extends BaseChromosome{
 
-	public BinaryChromosome(Class<? extends BaseGene> geneClass, int geneLength) {
+	public BinaryChromosome(Class<? extends BaseGene> geneClass, int geneLength) throws InstantiationException, IllegalAccessException {
 		super(geneClass, geneLength);
 		// TODO Auto-generated constructor stub
 	}
