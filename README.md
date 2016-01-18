@@ -1,8 +1,15 @@
-# Generic Genetic Algorithm Library for YARN
+# Distributed Genetic Algorithm Library for YARN
 
-A library which can be used by clients to impelment Genetic algorithm for running them on hadoop yarn clusters.
+A framework which can be used by clients to impelment Genetic algorithm for running them on hadoop yarn clusters.
+This framework will submit job to YARN application master, and coordinates in between distributed GA.
 
-##Steps to bring up cluster
+Client need to extend framework classes and provide implementation of GA operators.
+
+## Distributed Genetic Algorithm source and sample app
+1. distributedga folder has source code for framework. 
+2. gene-mapping and maxeval folder contains example source code which uses framework for distributed Genetic Algorithm.
+
+##Steps to bring up YARN cluster
 1. Install Vagrant.
 2. Bring up virtual machines using `$ vagrant up`. You will have 3 machines (NodeA, NodeB, and NodeB) running.
 3. Vagrant provisioning will make sure each file has following:
@@ -26,5 +33,4 @@ A library which can be used by clients to impelment Genetic algorithm for runnin
   - `$ stop-dfs.sh`
   - `$ stop-yarn.sh`
 
-##YARN sample app
 
